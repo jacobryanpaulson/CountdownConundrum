@@ -86,6 +86,30 @@ public class PlayerController : MonoBehaviour
         return true;
 
     }
+     public void TeleportTo(Vector3 destinationPosition)
+    {
+        if (currentMovesRemaining <= 0) return;
+
+        // Note: Teleportation usually costs 1 move. If you want it to be free, delete the next line:
+        currentMovesRemaining--; 
+
+        transform.position = destinationPosition;
+        
+        // Let the LoopManager know where the player warped to
+        LoopManager.Instance.RecordPosition(transform.position);
+        OnPlayerMoved?.Invoke();
+
+         CheckMoveLimit();
+
+        
+    }
+     private void CheckMoveLimit()
+    {
+        if (currentMovesRemaining <= 0)
+        {
+            LoopManager.Instance.ResetLoop();
+        }
+    }
      public void ResetMoves()
     {
         currentMovesRemaining = maxMoves;
