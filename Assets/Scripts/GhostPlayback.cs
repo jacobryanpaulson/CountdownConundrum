@@ -10,7 +10,7 @@ private int currentStepIndex = 0;
     {
         PlayerController.OnPlayerMoved += moveGhost;
     }
-    public void Osable()
+    public void OnDisable()
     {
         PlayerController.OnPlayerMoved -= moveGhost;
     }
