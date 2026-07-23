@@ -44,12 +44,28 @@ public class LoopManager : MonoBehaviour
     }
     public void SpawnGhost()
     {
-        foreach(List<Vector3> savedPath in lastMovePath){
+        /*foreach(List<Vector3> savedPath in lastMovePath)
+        {
         GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
 
         GhostPlayback playback = ghost.GetComponent<GhostPlayback>();
         playback.SetPath(savedPath);
+        }*/
+
+        for (int i = 0; i < lastMovePath.Count; i++)
+        {
+            List<Vector3> savedPath = lastMovePath[i];
+            GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+
+             GhostPlayback playback = ghost.GetComponent<GhostPlayback>();
+            playback.SetPath(savedPath);
+
+            if (ghost.TryGetComponent<ColorChange>(out ColorChange colorChange))
+            {
+                colorChange.ColorSet(i);
+            }
         }
+        
     }
 
     private void ClearActiveGhosts()
