@@ -8,6 +8,7 @@ public class LoopManager : MonoBehaviour
     [SerializeField] private GameObject ghostPrefab;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerObject;
+    [SerializeField] private LevelGoal levelGoal;
     [SerializeField]private int maxGhostsAllowed = 5;
 
     private List<List<Vector3>> lastMovePath = new List<List<Vector3>>();
@@ -95,6 +96,11 @@ public class LoopManager : MonoBehaviour
     
     playerObject.transform.position = spawnPoint.position;
     playerObject.GetComponent<PlayerController>().ResetMoves();
+
+    if (levelGoal != null)
+        {
+            levelGoal.ResetGoal();
+        }
 }
 
     
