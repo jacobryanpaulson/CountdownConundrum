@@ -59,7 +59,8 @@ public class LoopManager : MonoBehaviour
 
         if (playerObject != null && spawnPoint != null)
         {
-            playerObject.transform.position = spawnPoint.position;
+            playerObject.transform.position =
+                spawnPoint.position;
         }
 
         PlayerController playerController =
@@ -162,7 +163,8 @@ public class LoopManager : MonoBehaviour
 
         if (playerObject != null && spawnPoint != null)
         {
-            playerObject.transform.position = spawnPoint.position;
+            playerObject.transform.position =
+                spawnPoint.position;
         }
 
         PlayerController playerController =

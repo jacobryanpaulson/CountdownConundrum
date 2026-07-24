@@ -1,10 +1,13 @@
 using System.Buffers.Text;
 using System.Collections;
 using System.Numerics;
+using Microsoft.Unity.VisualStudio.Editor;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.XR.Haptics;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
+
 
 public enum GameState
 {
@@ -30,6 +33,13 @@ public class GameManager : MonoBehaviour
    public GameObject player;
    private int currentPuzzleIndex = 0;
 
+   public float levelTransitionDelay = 2.0f;
+   public UnityEngine.UI.Image fadeImage;
+   public float fadeDuration = 1f;
+
+  
+
+
    
   
 
@@ -50,6 +60,8 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        ResetToFirstPuzzle();
+
         if(player != null && player.TryGetComponent<PlayerController>(out PlayerController pc))
         {
               if (spawnPoints != null && spawnPoints.Length > 0 && spawnPoints[0] != null)
@@ -102,13 +114,90 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+    public void ResetToFirstPuzzle()
+{
+   
+    currentPuzzleIndex = 0;
 
-    public void AdvanceToNextPuzzle()
+     if (levelGoals != null)
     {
+        for (int i = 0; i < levelGoals.Length; i++)
+        {
+            if (levelGoals[i] != null)
+            {
+                levelGoals[i].ResetGoal();
+            }
+        }
+    }
+
+    
+    if (player != null && player.TryGetComponent<PlayerController>(out PlayerController pc))
+    {
+        
+        if (spawnPoints != null && spawnPoints.Length > 0 && spawnPoints[0] != null)
+        {
+            player.transform.position = spawnPoints[0].position;
+            
+            if (LoopManager.Instance != null)
+            {
+                LoopManager.Instance.UpdateSpawnPoint(spawnPoints[0]);
+            }
+        }
+
+      
+        if (levelGoals != null && levelGoals.Length > 0)
+        {
+            pc.UpdatePuzzleReferences(levelGoals[0]);
+        }
+        if (puzzleMoveLimits != null && puzzleMoveLimits.Length > 0)
+        {
+            pc.ResetMoves(puzzleMoveLimits[0]);
+        }
+    }
+
+    
+    for (int i = 0; i < puzzleCam.Length; i++)
+    {
+        if (puzzleCam[i] != null)
+        {
+            puzzleCam[i].gameObject.SetActive(i == 0);
+        }
+    }
+}
+    
+    public void StartDelayedAdvance()
+    {
+        StartCoroutine(AdvanceToNextPuzzle());
+    }
+
+    private IEnumerator AdvanceToNextPuzzle()
+    {
+        yield return new WaitForSeconds(.5f);
+           if (fadeImage != null)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float alpha = Mathf.Clamp01(elapsedTime / fadeDuration);
+            fadeImage.color = new Color(0, 0, 0, alpha);
+            yield return null;
+        }
+    }
+        
+
+    
+       
+
         int nextIndex = currentPuzzleIndex + 1;
 
         if(nextIndex < puzzleCam.Length && nextIndex < spawnPoints.Length)
         {
+              if (levelGoals != null && levelGoals[currentPuzzleIndex] != null)
+        {
+            levelGoals[currentPuzzleIndex].ResetGoal();
+        }
+
           Camera currentCam = puzzleCam[currentPuzzleIndex];
           Camera nextCam = puzzleCam[currentPuzzleIndex + 1];
           Transform nextSpawn = spawnPoints[currentPuzzleIndex + 1];
@@ -143,11 +232,26 @@ public class GameManager : MonoBehaviour
             
             currentPuzzleIndex++;
 
+
         }
         else
         {
             Debug.Log("All puzzles completed!");
         }
+        yield return new WaitForSeconds(levelTransitionDelay);
+        
+         if (fadeImage != null)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float alpha = Mathf.Clamp01(1f - (elapsedTime / fadeDuration));
+            fadeImage.color = new Color(0, 0, 0, alpha);
+            yield return null;
+        }
+    }
+
     }
   
 }

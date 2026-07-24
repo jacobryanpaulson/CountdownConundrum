@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -11,6 +12,9 @@ public class PlayerController : MonoBehaviour
     [Header("Puzzle Settings")]
     [SerializeField] private int maxMoves = 10;
     [SerializeField] private LevelGoal levelGoal;
+
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI stepText;
 
     public static Action OnPlayerMoved;
 
@@ -41,6 +45,12 @@ public class PlayerController : MonoBehaviour
     {
         controls.Movement.Movement.performed +=
             context => Move(context.ReadValue<Vector2>());
+
+        if (stepText != null)
+        {
+            stepText.text =
+                "Steps Remaining: " + currentMovesRemaining;
+        }
     }
 
     private void Update()
@@ -85,6 +95,12 @@ public class PlayerController : MonoBehaviour
         }
 
         OnPlayerMoved?.Invoke();
+
+        if (stepText != null)
+        {
+            stepText.text =
+                "Steps Remaining: " + currentMovesRemaining;
+        }
 
         if (
             levelGoal != null &&
@@ -144,6 +160,13 @@ public class PlayerController : MonoBehaviour
         }
 
         currentMovesRemaining = maxMoves;
+
+        if (stepText != null)
+        {
+            stepText.text =
+                "Steps Remaining: " + currentMovesRemaining;
+        }
+
         canMove = true;
     }
 
