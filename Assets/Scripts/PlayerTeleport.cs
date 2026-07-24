@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 
 public class PlayerTeleport : MonoBehaviour
 {
+    public GameObject interactText;
     private GameObject currentTeleporter;
     private static bool isOnCooldown = false;
     [SerializeField] private float teleportCooldown =.5f;
@@ -12,6 +14,7 @@ public class PlayerTeleport : MonoBehaviour
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
+        interactText.SetActive(false);
     }
 
    
@@ -22,7 +25,7 @@ public class PlayerTeleport : MonoBehaviour
            if (!isOnCooldown)
             {
                 Teleporter teleporter = currentTeleporter.GetComponent<Teleporter>();
-
+ 
                 if(teleporter != null)
                 {
                   StartCoroutine(TeleportRoutine(teleporter.GetDestination().position));
@@ -35,6 +38,9 @@ public class PlayerTeleport : MonoBehaviour
         if (collision.CompareTag("Teleporter"))
         {
             currentTeleporter = collision.gameObject;
+            interactText.SetActive(true);
+
+
             //Uncomment This if you want more portal style and remove the Input Keydown function in update
             /*if (!isOnCooldown)
             {
@@ -68,6 +74,7 @@ public class PlayerTeleport : MonoBehaviour
             if(collision.gameObject == currentTeleporter)
             {
                 currentTeleporter = null;
+                interactText.SetActive(false);
 
                
 
