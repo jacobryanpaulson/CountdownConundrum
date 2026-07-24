@@ -21,7 +21,7 @@ public class LevelGoal : MonoBehaviour
     {
         if (IsCompleted)
         {
-            return true;
+            return false;
         }
 
         if (goalTilemap == null)
@@ -42,6 +42,15 @@ public class LevelGoal : MonoBehaviour
         }
 
         IsCompleted = true;
+
+        if (GameManager.Instance != null)
+    {
+        GameManager.Instance.AdvanceToNextPuzzle();
+    }
+    else
+    {
+        Debug.LogWarning("GameManager instance not found in scene!");
+    }
 
         if (levelCompleteMessage != null)
         {

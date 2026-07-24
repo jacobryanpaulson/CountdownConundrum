@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Teleporter
+  - Moving Box
   layers:
   - Default
   - TransparentFX

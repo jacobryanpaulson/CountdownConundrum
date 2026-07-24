@@ -1,5 +1,6 @@
 using System.Buffers.Text;
 using System.Collections;
+using System.Numerics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.XR.Haptics;
@@ -18,13 +19,26 @@ public enum GameState
 public class GameManager : MonoBehaviour
 {
     public GameState CurrentState { get; private set; }
-   public static GameManager instance;
+    
+   public static GameManager Instance {get; private set;}
+
+   [Header("Camera References")]
+   public Camera[] puzzleCam;
+   public Transform[] spawnPoints;
+   public LevelGoal[] levelGoals;
+   public int[] puzzleMoveLimits;
+   public GameObject player;
+   private int currentPuzzleIndex = 0;
+
+   
+  
+
 
     private void Awake()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
 
         }
@@ -36,6 +50,26 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        if(player != null && player.TryGetComponent<PlayerController>(out PlayerController pc))
+        {
+              if (spawnPoints != null && spawnPoints.Length > 0 && spawnPoints[0] != null)
+        {
+            player.transform.position = spawnPoints[0].position;
+            
+            if (LoopManager.Instance != null)
+            {
+                LoopManager.Instance.UpdateSpawnPoint(spawnPoints[0]);
+            }
+        }
+         if (levelGoals.Length > 0)
+            {
+                pc.UpdatePuzzleReferences(levelGoals[0]);
+            }
+            if(puzzleMoveLimits != null && puzzleMoveLimits.Length > 0)
+            {
+                pc.ResetMoves(puzzleMoveLimits[0]);
+            }
+        }
         ChangeState(GameState.MainMenu);
     }
     public void ChangeState(GameState newState)
@@ -68,4 +102,52 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    public void AdvanceToNextPuzzle()
+    {
+        int nextIndex = currentPuzzleIndex + 1;
+
+        if(nextIndex < puzzleCam.Length && nextIndex < spawnPoints.Length)
+        {
+          Camera currentCam = puzzleCam[currentPuzzleIndex];
+          Camera nextCam = puzzleCam[currentPuzzleIndex + 1];
+          Transform nextSpawn = spawnPoints[currentPuzzleIndex + 1];
+
+            if (LoopManager.Instance != null && nextSpawn != null)
+        {
+            LoopManager.Instance.UpdateSpawnPoint(nextSpawn);
+        }
+
+
+          
+
+          if(player != null )
+            {
+                player.transform.position = nextSpawn.position;
+               
+                if(player.TryGetComponent<PlayerController>(out PlayerController pc))
+                {
+                    pc.UpdatePuzzleReferences(levelGoals[nextIndex]);
+
+                    int nextMoveLimit = puzzleMoveLimits[nextIndex];
+                    pc.ResetMoves(nextMoveLimit);
+                }
+                
+            }
+          
+          if(currentCam != null && nextCam != null)
+            {
+                nextCam.gameObject.SetActive(true);
+                currentCam.gameObject.SetActive(false);
+            }
+            
+            currentPuzzleIndex++;
+
+        }
+        else
+        {
+            Debug.Log("All puzzles completed!");
+        }
+    }
+  
 }
