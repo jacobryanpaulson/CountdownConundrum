@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
    [SerializeField] private Tilemap groundTilemap;
    [SerializeField] private Tilemap collisionTilemap;
    [SerializeField] private int maxMoves = 10;
+   [SerializeField] private LevelGoal levelGoal;
    public static Action OnPlayerMoved;
 
   
@@ -15,6 +16,7 @@ public class PlayerController : MonoBehaviour
 
     private GridInputMovement controls;
     private int currentMovesRemaining;
+    private bool canMove = true;
 
     void Awake()
     {
@@ -52,7 +54,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move(Vector2 direction)
     {
-        if (currentMovesRemaining <= 0)
+        if (!canMove || currentMovesRemaining <= 0)
         {
             return;
         }
@@ -65,6 +67,15 @@ public class PlayerController : MonoBehaviour
         transform.position += (Vector3)direction;
         LoopManager.Instance.RecordPosition(transform.position);
         OnPlayerMoved?.Invoke();
+
+        if (
+            levelGoal != null &&
+            levelGoal.CheckForCompletion(transform.position)
+        )
+            {
+                canMove = false;
+                return;
+            }
 
          if(currentMovesRemaining <= 0)
         {
@@ -113,6 +124,7 @@ public class PlayerController : MonoBehaviour
      public void ResetMoves()
     {
         currentMovesRemaining = maxMoves;
+        canMove = true;
     }
 
     public static void ClearMovementEvents()
