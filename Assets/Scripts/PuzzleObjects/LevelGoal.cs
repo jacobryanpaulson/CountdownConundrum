@@ -6,6 +6,7 @@ public class LevelGoal : MonoBehaviour
     [Header("Goal Setup")]
     [SerializeField] private Tilemap goalTilemap;
     [SerializeField] private GameObject levelCompleteMessage;
+    
 
     public bool IsCompleted { get; private set; }
 
@@ -42,22 +43,24 @@ public class LevelGoal : MonoBehaviour
         }
 
         IsCompleted = true;
+          if (levelCompleteMessage != null)
+        {
+            levelCompleteMessage.SetActive(true);
+        }
+        Debug.Log("Level Complete!");
 
         if (GameManager.Instance != null)
     {
-        GameManager.Instance.AdvanceToNextPuzzle();
+        GameManager.Instance.StartDelayedAdvance();
     }
     else
     {
         Debug.LogWarning("GameManager instance not found in scene!");
     }
 
-        if (levelCompleteMessage != null)
-        {
-            levelCompleteMessage.SetActive(true);
-        }
+     
 
-        Debug.Log("Level Complete!");
+        
 
         return true;
     }

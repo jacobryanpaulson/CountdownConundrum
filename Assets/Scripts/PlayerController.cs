@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,6 +12,7 @@ public class PlayerController : MonoBehaviour
    [SerializeField] private Tilemap collisionTilemap;
    [SerializeField] private int maxMoves = 10;
    [SerializeField] private LevelGoal levelGoal;
+   [SerializeField] private TextMeshProUGUI stepText;
    public static Action OnPlayerMoved;
 
   
@@ -39,6 +42,11 @@ public class PlayerController : MonoBehaviour
     {
        // Instantiate(playerPrefab, spawnPoint.transform.position, Quaternion.identity);
         controls.Movement.Movement.performed += ctx => Move(ctx.ReadValue<Vector2>());
+       
+        if(stepText != null)
+        {
+            stepText.text = ("Steps Remaining:" + currentMovesRemaining);
+        }
 
 
     }
@@ -56,6 +64,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move(Vector2 direction)
     {
+        
         if (!canMove || currentMovesRemaining <= 0)
         {
             return;
@@ -69,6 +78,11 @@ public class PlayerController : MonoBehaviour
         transform.position += (Vector3)direction;
         LoopManager.Instance.RecordPosition(transform.position);
         OnPlayerMoved?.Invoke();
+        
+        if(stepText != null)
+        {
+            stepText.text = ("Steps Remaining:" + currentMovesRemaining);
+        }
 
         if (
             levelGoal != null &&
@@ -132,6 +146,10 @@ public class PlayerController : MonoBehaviour
     }
 
     currentMovesRemaining = maxMoves;
+    if(stepText != null)
+        {
+            stepText.text = ("Steps Remaining:" + currentMovesRemaining);
+        }
     canMove = true; 
 }
 
