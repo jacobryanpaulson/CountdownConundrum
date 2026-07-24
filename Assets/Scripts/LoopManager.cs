@@ -68,6 +68,15 @@ public class LoopManager : MonoBehaviour
         }
         
     }
+    public void UpdateSpawnPoint(Transform newSpawnPoint)
+    {
+        spawnPoint = newSpawnPoint;
+
+        lastMovePath.Clear();
+        currentMovePath.Clear();
+
+        ClearActiveGhosts();
+    }
 
     private void ClearActiveGhosts()
     {

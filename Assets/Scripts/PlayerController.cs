@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Tilemaps;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour
     private GridInputMovement controls;
     private int currentMovesRemaining;
     private bool canMove = true;
+    private float _pushPower = 2f;
 
     void Awake()
     {
@@ -73,7 +75,7 @@ public class PlayerController : MonoBehaviour
             levelGoal.CheckForCompletion(transform.position)
         )
             {
-                canMove = false;
+                //canMove = false;
                 return;
             }
 
@@ -121,14 +123,29 @@ public class PlayerController : MonoBehaviour
             LoopManager.Instance.ResetLoop();
         }
     }
-     public void ResetMoves()
+   public void ResetMoves(int newMaxMoves = -1)
+{
+   
+    if (newMaxMoves > 0)
     {
-        currentMovesRemaining = maxMoves;
-        canMove = true;
+        maxMoves = newMaxMoves;
     }
+
+    currentMovesRemaining = maxMoves;
+    canMove = true; 
+}
 
     public static void ClearMovementEvents()
     {
         OnPlayerMoved = null;
     }
+    public void UpdatePuzzleReferences(LevelGoal newGoal)
+{
+    
+    levelGoal = newGoal;
+    
+    Debug.Log("Player successfully synced to the new puzzle's grid and goal!");
+}
+
+
 }
