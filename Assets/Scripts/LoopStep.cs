@@ -9,8 +9,11 @@ public enum LoopStepType
 public struct LoopStep
 {
     public LoopStepType StepType;
+
     public Vector2 Direction;
-    public Vector3 Destination;
+
+    public Vector3 TeleportStartPosition;
+    public Vector3 TeleportDestination;
 
     public static LoopStep CreateMove(Vector2 direction)
     {
@@ -21,12 +24,16 @@ public struct LoopStep
         };
     }
 
-    public static LoopStep CreateTeleport(Vector3 destination)
+    public static LoopStep CreateTeleport(
+        Vector3 startPosition,
+        Vector3 destination
+    )
     {
         return new LoopStep
         {
             StepType = LoopStepType.Teleport,
-            Destination = destination
+            TeleportStartPosition = startPosition,
+            TeleportDestination = destination
         };
     }
 }

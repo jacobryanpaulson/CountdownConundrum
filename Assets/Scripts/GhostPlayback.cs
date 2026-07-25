@@ -4,8 +4,11 @@ using UnityEngine.Tilemaps;
 
 public class GhostPlayback : MonoBehaviour
 {
-    private List<LoopStep> savedPath = new List<LoopStep>();
+    private List<LoopStep> savedPath =
+        new List<LoopStep>();
+
     private int currentStepIndex;
+    private bool movingForward = true;
 
     private Tilemap groundTilemap;
     private Tilemap collisionTilemap;
@@ -26,49 +29,112 @@ public class GhostPlayback : MonoBehaviour
         Tilemap newCollisionTilemap
     )
     {
-        savedPath = new List<LoopStep>(pathHistory);
-        groundTilemap = newGroundTilemap;
-        collisionTilemap = newCollisionTilemap;
+        savedPath =
+            new List<LoopStep>(pathHistory);
+
+        groundTilemap =
+            newGroundTilemap;
+
+        collisionTilemap =
+            newCollisionTilemap;
+
         currentStepIndex = 0;
+        movingForward = true;
     }
 
     private void MoveGhost()
     {
-        if (currentStepIndex >= savedPath.Count)
+        if (savedPath == null || savedPath.Count == 0)
         {
-            Debug.Log("Ghost Has Completed its path");
             return;
         }
 
-        LoopStep currentStep = savedPath[currentStepIndex];
-        currentStepIndex++;
+        LoopStep currentStep =
+            savedPath[currentStepIndex];
 
-        switch (currentStep.StepType)
+        ExecuteStep(currentStep);
+
+        UpdatePlaybackPosition();
+    }
+
+    private void ExecuteStep(LoopStep step)
+    {
+        switch (step.StepType)
         {
             case LoopStepType.Move:
-                if (
-                    groundTilemap == null ||
-                    collisionTilemap == null
-                )
-                {
-                    Debug.LogError(
-                        $"{gameObject.name} is missing its Tilemap references."
-                    );
-
-                    return;
-                }
-
-                GridMovement.TryMoveActor(
-                    transform,
-                    currentStep.Direction,
-                    groundTilemap,
-                    collisionTilemap
-                );
+                ExecuteMovementStep(step);
                 break;
 
             case LoopStepType.Teleport:
-                transform.position = currentStep.Destination;
+                ExecuteTeleportStep(step);
                 break;
+        }
+    }
+
+    private void ExecuteMovementStep(LoopStep step)
+    {
+        if (
+            groundTilemap == null ||
+            collisionTilemap == null
+        )
+        {
+            Debug.LogError(
+                $"{gameObject.name} is missing its Tilemap references."
+            );
+
+            return;
+        }
+
+        Vector2 playbackDirection =
+            movingForward
+                ? step.Direction
+                : -step.Direction;
+
+        GridMovement.TryMoveActor(
+            transform,
+            playbackDirection,
+            groundTilemap,
+            collisionTilemap
+        );
+    }
+
+    private void ExecuteTeleportStep(LoopStep step)
+    {
+        if (movingForward)
+        {
+            transform.position =
+                step.TeleportDestination;
+        }
+        else
+        {
+            transform.position =
+                step.TeleportStartPosition;
+        }
+    }
+
+    private void UpdatePlaybackPosition()
+    {
+        if (movingForward)
+        {
+            if (currentStepIndex >= savedPath.Count - 1)
+            {
+                movingForward = false;
+            }
+            else
+            {
+                currentStepIndex++;
+            }
+        }
+        else
+        {
+            if (currentStepIndex <= 0)
+            {
+                movingForward = true;
+            }
+            else
+            {
+                currentStepIndex--;
+            }
         }
     }
 }
