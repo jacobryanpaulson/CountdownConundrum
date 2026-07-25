@@ -1,73 +1,141 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LoopManager : MonoBehaviour
 {
-    public static LoopManager Instance {get; private set;}
+    public static LoopManager Instance { get; private set; }
+
+    [Header("Loop References")]
     [SerializeField] private GameObject ghostPrefab;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerObject;
-   // [SerializeField] private LevelGoal levelGoal;
-    [SerializeField]private int maxGhostsAllowed = 5;
+    [SerializeField] private LevelGoal levelGoal;
 
-    private List<List<Vector3>> lastMovePath = new List<List<Vector3>>();
+    [Header("Loop Settings")]
+    [SerializeField] private int maxGhostsAllowed = 5;
 
-    private List<Vector3> currentMovePath = new List<Vector3>();
+    private readonly List<List<LoopStep>> lastMovePath =
+        new List<List<LoopStep>>();
 
-    void Awake()
+    private readonly List<LoopStep> currentMovePath =
+        new List<LoopStep>();
+
+    private void Awake()
     {
-        if(Instance == null) Instance = this;
-        else Destroy(gameObject);
-
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    public void RecordPosition(Vector3 newPosition)
+    public void RecordMove(Vector2 direction)
     {
-        currentMovePath.Add(newPosition);
+        currentMovePath.Add(
+            LoopStep.CreateMove(direction)
+        );
     }
+
+    public void RecordTeleport(Vector3 destination)
+    {
+        currentMovePath.Add(
+            LoopStep.CreateTeleport(destination)
+        );
+    }
+
     public void ResetLoop()
     {
-        lastMovePath.Add(new List<Vector3>(currentMovePath));
+        lastMovePath.Add(
+            new List<LoopStep>(currentMovePath)
+        );
+
         currentMovePath.Clear();
 
-        playerObject.transform.position = spawnPoint.position; 
-
-        playerObject.GetComponent<PlayerController>().ResetMoves();
-
-        if(lastMovePath.Count > maxGhostsAllowed)
-        {
-           lastMovePath.RemoveAt(0);
-        }
         ClearActiveGhosts();
+        GridBox.ResetAllBoxes();
 
-        SpawnGhost();
-    }
-    public void SpawnGhost()
-    {
-        /*foreach(List<Vector3> savedPath in lastMovePath)
+        if (playerObject != null && spawnPoint != null)
         {
-        GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+            playerObject.transform.position =
+                spawnPoint.position;
+        }
 
-        GhostPlayback playback = ghost.GetComponent<GhostPlayback>();
-        playback.SetPath(savedPath);
-        }*/
+        PlayerController playerController =
+            GetPlayerController();
+
+        if (playerController != null)
+        {
+            playerController.ResetMoves();
+        }
+
+        if (lastMovePath.Count > maxGhostsAllowed)
+        {
+            lastMovePath.RemoveAt(0);
+        }
+
+        SpawnGhosts();
+    }
+
+    private void SpawnGhosts()
+    {
+        PlayerController playerController =
+            GetPlayerController();
+
+        if (
+            ghostPrefab == null ||
+            spawnPoint == null ||
+            playerController == null
+        )
+        {
+            Debug.LogError(
+                "LoopManager is missing the ghost prefab, spawn point, " +
+                "or PlayerController reference."
+            );
+
+            return;
+        }
 
         for (int i = 0; i < lastMovePath.Count; i++)
         {
-            List<Vector3> savedPath = lastMovePath[i];
-            GameObject ghost = Instantiate(ghostPrefab, spawnPoint.position, Quaternion.identity);
+            GameObject ghost = Instantiate(
+                ghostPrefab,
+                spawnPoint.position,
+                Quaternion.identity
+            );
 
-             GhostPlayback playback = ghost.GetComponent<GhostPlayback>();
-            playback.SetPath(savedPath);
+            GhostPlayback playback =
+                ghost.GetComponent<GhostPlayback>();
 
-            if (ghost.TryGetComponent<ColorChange>(out ColorChange colorChange))
+            if (playback == null)
+            {
+                Debug.LogError(
+                    "The Ghost prefab is missing GhostPlayback."
+                );
+
+                Destroy(ghost);
+                continue;
+            }
+
+            playback.SetPath(
+                lastMovePath[i],
+                playerController.GroundTilemap,
+                playerController.CollisionTilemap
+            );
+
+            if (
+                ghost.TryGetComponent<ColorChange>(
+                    out ColorChange colorChange
+                )
+            )
             {
                 colorChange.ColorSet(i);
             }
         }
-        
     }
+
     public void UpdateSpawnPoint(Transform newSpawnPoint)
     {
         spawnPoint = newSpawnPoint;
@@ -76,41 +144,63 @@ public class LoopManager : MonoBehaviour
         currentMovePath.Clear();
 
         ClearActiveGhosts();
+        GridBox.ResetAllBoxes();
+    }
+
+    public void FullResetLevel()
+    {
+        Debug.Log(
+            "Full Level Reset! Wiping out all ghost data."
+        );
+
+        ClearActiveGhosts();
+        PlayerController.ClearMovementEvents();
+
+        lastMovePath.Clear();
+        currentMovePath.Clear();
+
+        GridBox.ResetAllBoxes();
+
+        if (playerObject != null && spawnPoint != null)
+        {
+            playerObject.transform.position =
+                spawnPoint.position;
+        }
+
+        PlayerController playerController =
+            GetPlayerController();
+
+        if (playerController != null)
+        {
+            playerController.ResetMoves();
+        }
+
+        if (levelGoal != null)
+        {
+            levelGoal.ResetGoal();
+        }
+    }
+
+    private PlayerController GetPlayerController()
+    {
+        if (playerObject == null)
+        {
+            return null;
+        }
+
+        return playerObject.GetComponent<PlayerController>();
     }
 
     private void ClearActiveGhosts()
     {
-       
-        GhostPlayback[] activeGhosts = FindObjectsByType<GhostPlayback>(FindObjectsSortMode.None);
+        GhostPlayback[] activeGhosts =
+            FindObjectsByType<GhostPlayback>(
+                FindObjectsSortMode.None
+            );
+
         foreach (GhostPlayback ghost in activeGhosts)
         {
-            Destroy(ghost.gameObject); 
+            Destroy(ghost.gameObject);
         }
     }
-
-    public void FullResetLevel()
-{
-    Debug.Log("Full Level Reset! Wiping out all ghost data.");
-    
-    ClearActiveGhosts();
-
-     PlayerController.ClearMovementEvents();
-   
-    lastMovePath.Clear();
-    currentMovePath.Clear();
-
-    
-    
-
-    
-    playerObject.transform.position = spawnPoint.position;
-    playerObject.GetComponent<PlayerController>().ResetMoves();
-
-   // if (levelGoal != null)
-        //{
-       //     levelGoal.ResetGoal();
-      //  }
-}
-
-    
 }
