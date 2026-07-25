@@ -17,6 +17,8 @@ public class LoopManager : MonoBehaviour
     private readonly List<List<LoopStep>> lastMovePath =
         new List<List<LoopStep>>();
 
+    private int nextGhostColorIndex;
+
     private readonly List<LoopStep> currentMovePath =
         new List<LoopStep>();
 
@@ -202,5 +204,97 @@ public class LoopManager : MonoBehaviour
         {
             Destroy(ghost.gameObject);
         }
+    }
+
+    public bool CanCreateClone()
+    {
+        GhostPlayback[] activeGhosts =
+            FindObjectsByType<GhostPlayback>(
+                FindObjectsSortMode.None
+            );
+        return activeGhosts.Length < maxGhostsAllowed;
+    }
+
+    public bool CreateClone(
+        Vector3 cloneStartPosition,
+        List<LoopStep> recordedPath
+    )
+    {
+        if (ghostPrefab == null)
+        {
+            Debug.LogError(
+                "LoopManager does not have a Ghost Prefab Assigned"
+            );
+
+            return false;
+        }
+
+        if (recordedPath == null || recordedPath.Count == 0)
+        {
+            Debug.LogWarning(
+                "A clone cannot be crated without a recored path."
+            );
+
+            return false;
+        }
+
+        if (!CanCreateClone())
+        {
+            Debug.LogWarning(
+                "The maximum nuber of clones has been created."
+            );
+
+            return false;
+        }
+
+        PlayerController playerController =
+            GetPlayerController();
+
+        if (playerController == null)
+        {
+            Debug.LogError(
+                "LoopManager could not find PLaterController"
+            );
+
+            return false;
+        }
+
+        GameObject ghost = Instantiate(
+            ghostPrefab,
+            cloneStartPosition,
+            Quaternion.identity
+        );
+
+        GhostPlayback playback =
+            ghost.GetComponent<GhostPlayback>();
+
+        if (playback == null)
+        {
+            Debug.LogError(
+                "The Ghost prefab is missing GhostPlayback"
+            );
+
+            Destroy(ghost);
+            return false;
+        }
+
+        playback.SetPath(
+            recordedPath,
+            playerController.GroundTilemap,
+            playerController.CollisionTilemap
+        );
+
+        if (
+            ghost.TryGetComponent<ColorChange>(
+                out ColorChange colorChange
+            )
+        )
+        {
+            colorChange.ColorSet(nextGhostColorIndex);
+        }
+
+        nextGhostColorIndex --;
+
+        return true;
     }
 }
