@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
 
     public Tilemap GroundTilemap => groundTilemap;
     public Tilemap CollisionTilemap => collisionTilemap;
+    public Animator animator;
 
     private GridInputMovement controls;
     private int currentMovesRemaining;
@@ -81,11 +82,13 @@ public class PlayerController : MonoBehaviour
             groundTilemap,
             collisionTilemap
         );
+        
 
         if (!movementSucceeded)
         {
             return;
         }
+        
 
         currentMovesRemaining--;
 
@@ -122,6 +125,7 @@ public class PlayerController : MonoBehaviour
 
         currentMovesRemaining--;
         transform.position = destinationPosition;
+        
 
         if (LoopManager.Instance != null)
         {
