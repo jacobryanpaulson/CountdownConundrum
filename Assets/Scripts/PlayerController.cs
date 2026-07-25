@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -20,11 +21,18 @@ public class PlayerController : MonoBehaviour
 
     public Tilemap GroundTilemap => groundTilemap;
     public Tilemap CollisionTilemap => collisionTilemap;
+
     public Animator animator;
 
     private GridInputMovement controls;
     private int currentMovesRemaining;
     private bool canMove = true;
+
+    private bool isRecordingClone;
+    private Vector3 cloneRecordingStartPosition;
+
+    private readonly List<LoopStep> recordedClonePath =
+        new List<LoopStep>();
 
     private void Awake()
     {
@@ -47,18 +55,21 @@ public class PlayerController : MonoBehaviour
         controls.Movement.Movement.performed +=
             context => Move(context.ReadValue<Vector2>());
 
-        if (stepText != null)
-        {
-            stepText.text =
-                "Steps Remaining: " + currentMovesRemaining;
-        }
+        UpdateStepText();
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            ToggleCloneRecording();
+        }
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             Debug.Log("Manual Reset Triggered!");
+
+            CancelCloneRecording();
 
             if (LoopManager.Instance != null)
             {
@@ -74,86 +85,238 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        direction = GridMovement.GetCardinalDirection(direction);
+        direction =
+            GridMovement.GetCardinalDirection(direction);
 
-        bool movementSucceeded = GridMovement.TryMoveActor(
-            transform,
-            direction,
-            groundTilemap,
-            collisionTilemap
-        );
-        
+        bool movementSucceeded =
+            GridMovement.TryMoveActor(
+                transform,
+                direction,
+                groundTilemap,
+                collisionTilemap
+            );
 
         if (!movementSucceeded)
         {
             return;
         }
-        
 
-        currentMovesRemaining--;
+        SpendStep();
 
-        if (LoopManager.Instance != null)
+        if (isRecordingClone)
         {
-            LoopManager.Instance.RecordMove(direction);
+            recordedClonePath.Add(
+                LoopStep.CreateMove(direction)
+            );
         }
 
         OnPlayerMoved?.Invoke();
-
-        if (stepText != null)
-        {
-            stepText.text =
-                "Steps Remaining: " + currentMovesRemaining;
-        }
 
         if (
             levelGoal != null &&
             levelGoal.CheckForCompletion(transform.position)
         )
         {
+            canMove = false;
             return;
         }
 
-        CheckMoveLimit();
+        HandleEndOfStepBudget();
     }
 
-    public void TeleportTo(Vector3 destinationPosition)
+   public void TeleportTo(Vector3 destinationPosition)
+{
+    if (!canMove || currentMovesRemaining <= 0)
+    {
+        return;
+    }
+
+    Vector3 teleportStartPosition =
+        transform.position;
+
+    transform.position = destinationPosition;
+
+    SpendStep();
+
+    if (isRecordingClone)
+    {
+        recordedClonePath.Add(
+            LoopStep.CreateTeleport(
+                teleportStartPosition,
+                destinationPosition
+            )
+        );
+    }
+
+    OnPlayerMoved?.Invoke();
+
+    if (
+        levelGoal != null &&
+        levelGoal.CheckForCompletion(transform.position)
+    )
+    {
+        canMove = false;
+        return;
+    }
+
+    HandleEndOfStepBudget();
+}
+    private void SpendStep()
+    {
+        currentMovesRemaining--;
+        UpdateStepText();
+    }
+
+    private void HandleEndOfStepBudget()
+    {
+        if (currentMovesRemaining > 0)
+        {
+            return;
+        }
+
+        if (isRecordingClone)
+        {
+            FinishCloneRecording();
+        }
+
+        canMove = false;
+
+        Debug.Log(
+            "Out of steps! Press R to restart the puzzle."
+        );
+
+        UpdateStepText();
+    }
+
+    private void ToggleCloneRecording()
+    {
+        if (isRecordingClone)
+        {
+            FinishCloneRecording();
+        }
+        else
+        {
+            BeginCloneRecording();
+        }
+    }
+
+    private void BeginCloneRecording()
     {
         if (!canMove || currentMovesRemaining <= 0)
         {
+            Debug.LogWarning(
+                "There are no steps available for recording."
+            );
+
             return;
         }
 
-        currentMovesRemaining--;
-        transform.position = destinationPosition;
-        
+        if (LoopManager.Instance == null)
+        {
+            Debug.LogError(
+                "Cannot record a clone because LoopManager is missing."
+            );
+
+            return;
+        }
+
+        if (!LoopManager.Instance.CanCreateClone())
+        {
+            Debug.LogWarning(
+                "The maximum number of clones has been reached."
+            );
+
+            return;
+        }
+
+        isRecordingClone = true;
+        recordedClonePath.Clear();
+
+        cloneRecordingStartPosition =
+            transform.position;
+
+        UpdateStepText();
+
+        Debug.Log(
+            "Clone recording started at " +
+            cloneRecordingStartPosition
+        );
+    }
+
+    private void FinishCloneRecording()
+    {
+        if (!isRecordingClone)
+        {
+            return;
+        }
+
+        isRecordingClone = false;
+
+        if (recordedClonePath.Count == 0)
+        {
+            Debug.LogWarning(
+                "Recording ended without any successful actions."
+            );
+
+            recordedClonePath.Clear();
+            UpdateStepText();
+            return;
+        }
+
+        bool cloneWasCreated = false;
 
         if (LoopManager.Instance != null)
         {
-            LoopManager.Instance.RecordTeleport(transform.position);
+            cloneWasCreated =
+                LoopManager.Instance.CreateClone(
+                    cloneRecordingStartPosition,
+                    recordedClonePath
+                );
         }
 
-        OnPlayerMoved?.Invoke();
+        if (cloneWasCreated)
+        {
+            Debug.Log(
+                "Clone created with " +
+                recordedClonePath.Count +
+                " recorded actions."
+            );
+        }
 
-        if (
-            levelGoal != null &&
-            levelGoal.CheckForCompletion(transform.position)
-        )
+        recordedClonePath.Clear();
+        UpdateStepText();
+    }
+
+    private void CancelCloneRecording()
+    {
+        isRecordingClone = false;
+        recordedClonePath.Clear();
+
+        UpdateStepText();
+    }
+
+    private void UpdateStepText()
+    {
+        if (stepText == null)
         {
             return;
         }
 
-        CheckMoveLimit();
-    }
+        string recordingMessage =
+            isRecordingClone
+                ? "\nRECORDING CLONE"
+                : "\nPress Q to Record";
 
-    private void CheckMoveLimit()
-    {
-        if (
-            currentMovesRemaining <= 0 &&
-            LoopManager.Instance != null
-        )
+        if (!canMove && currentMovesRemaining <= 0)
         {
-            LoopManager.Instance.ResetLoop();
+            recordingMessage =
+                "\nOut of Steps - Press R";
         }
+
+        stepText.text =
+            "Steps Remaining: " +
+            currentMovesRemaining +
+            recordingMessage;
     }
 
     public void ResetMoves(int newMaxMoves = -1)
@@ -163,15 +326,13 @@ public class PlayerController : MonoBehaviour
             maxMoves = newMaxMoves;
         }
 
+        isRecordingClone = false;
+        recordedClonePath.Clear();
+
         currentMovesRemaining = maxMoves;
-
-        if (stepText != null)
-        {
-            stepText.text =
-                "Steps Remaining: " + currentMovesRemaining;
-        }
-
         canMove = true;
+
+        UpdateStepText();
     }
 
     public static void ClearMovementEvents()

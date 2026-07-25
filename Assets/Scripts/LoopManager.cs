@@ -5,20 +5,16 @@ public class LoopManager : MonoBehaviour
 {
     public static LoopManager Instance { get; private set; }
 
-    [Header("Loop References")]
+    [Header("Clone References")]
     [SerializeField] private GameObject ghostPrefab;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerObject;
     [SerializeField] private LevelGoal levelGoal;
 
-    [Header("Loop Settings")]
+    [Header("Clone Settings")]
     [SerializeField] private int maxGhostsAllowed = 5;
 
-    private readonly List<List<LoopStep>> lastMovePath =
-        new List<List<LoopStep>>();
-
-    private readonly List<LoopStep> currentMovePath =
-        new List<LoopStep>();
+    private int nextGhostColorIndex;
 
     private void Awake()
     {
@@ -32,116 +28,103 @@ public class LoopManager : MonoBehaviour
         }
     }
 
-    public void RecordMove(Vector2 direction)
+    public bool CanCreateClone()
     {
-        currentMovePath.Add(
-            LoopStep.CreateMove(direction)
-        );
+        GhostPlayback[] activeGhosts =
+            FindObjectsByType<GhostPlayback>(
+                FindObjectsSortMode.None
+            );
+
+        return activeGhosts.Length < maxGhostsAllowed;
     }
 
-    public void RecordTeleport(Vector3 destination)
+    public bool CreateClone(
+        Vector3 cloneStartPosition,
+        List<LoopStep> recordedPath
+    )
     {
-        currentMovePath.Add(
-            LoopStep.CreateTeleport(destination)
-        );
-    }
-
-    public void ResetLoop()
-    {
-        lastMovePath.Add(
-            new List<LoopStep>(currentMovePath)
-        );
-
-        currentMovePath.Clear();
-
-        ClearActiveGhosts();
-        GridBox.ResetAllBoxes();
-
-        if (playerObject != null && spawnPoint != null)
-        {
-            playerObject.transform.position =
-                spawnPoint.position;
-        }
-
-        PlayerController playerController =
-            GetPlayerController();
-
-        if (playerController != null)
-        {
-            playerController.ResetMoves();
-        }
-
-        if (lastMovePath.Count > maxGhostsAllowed)
-        {
-            lastMovePath.RemoveAt(0);
-        }
-
-        SpawnGhosts();
-    }
-
-    private void SpawnGhosts()
-    {
-        PlayerController playerController =
-            GetPlayerController();
-
-        if (
-            ghostPrefab == null ||
-            spawnPoint == null ||
-            playerController == null
-        )
+        if (ghostPrefab == null)
         {
             Debug.LogError(
-                "LoopManager is missing the ghost prefab, spawn point, " +
-                "or PlayerController reference."
+                "LoopManager does not have a Ghost prefab assigned."
             );
 
-            return;
+            return false;
         }
 
-        for (int i = 0; i < lastMovePath.Count; i++)
+        if (recordedPath == null || recordedPath.Count == 0)
         {
-            GameObject ghost = Instantiate(
-                ghostPrefab,
-                spawnPoint.position,
-                Quaternion.identity
+            Debug.LogWarning(
+                "A clone cannot be created without a recorded path."
             );
 
-            GhostPlayback playback =
-                ghost.GetComponent<GhostPlayback>();
-
-            if (playback == null)
-            {
-                Debug.LogError(
-                    "The Ghost prefab is missing GhostPlayback."
-                );
-
-                Destroy(ghost);
-                continue;
-            }
-
-            playback.SetPath(
-                lastMovePath[i],
-                playerController.GroundTilemap,
-                playerController.CollisionTilemap
-            );
-
-            if (
-                ghost.TryGetComponent<ColorChange>(
-                    out ColorChange colorChange
-                )
-            )
-            {
-                colorChange.ColorSet(i);
-            }
+            return false;
         }
+
+        if (!CanCreateClone())
+        {
+            Debug.LogWarning(
+                "The maximum number of clones has been reached."
+            );
+
+            return false;
+        }
+
+        PlayerController playerController =
+            GetPlayerController();
+
+        if (playerController == null)
+        {
+            Debug.LogError(
+                "LoopManager could not find PlayerController."
+            );
+
+            return false;
+        }
+
+        GameObject ghost = Instantiate(
+            ghostPrefab,
+            cloneStartPosition,
+            Quaternion.identity
+        );
+
+        GhostPlayback playback =
+            ghost.GetComponent<GhostPlayback>();
+
+        if (playback == null)
+        {
+            Debug.LogError(
+                "The Ghost prefab is missing GhostPlayback."
+            );
+
+            Destroy(ghost);
+            return false;
+        }
+
+        playback.SetPath(
+            recordedPath,
+            playerController.GroundTilemap,
+            playerController.CollisionTilemap
+        );
+
+        if (
+            ghost.TryGetComponent<ColorChange>(
+                out ColorChange colorChange
+            )
+        )
+        {
+            colorChange.ColorSet(nextGhostColorIndex);
+        }
+
+        nextGhostColorIndex++;
+
+        return true;
     }
 
     public void UpdateSpawnPoint(Transform newSpawnPoint)
     {
         spawnPoint = newSpawnPoint;
-
-        lastMovePath.Clear();
-        currentMovePath.Clear();
+        nextGhostColorIndex = 0;
 
         ClearActiveGhosts();
         GridBox.ResetAllBoxes();
@@ -150,14 +133,13 @@ public class LoopManager : MonoBehaviour
     public void FullResetLevel()
     {
         Debug.Log(
-            "Full Level Reset! Wiping out all ghost data."
+            "Full Level Reset! Wiping out all clone data."
         );
 
         ClearActiveGhosts();
         PlayerController.ClearMovementEvents();
 
-        lastMovePath.Clear();
-        currentMovePath.Clear();
+        nextGhostColorIndex = 0;
 
         GridBox.ResetAllBoxes();
 

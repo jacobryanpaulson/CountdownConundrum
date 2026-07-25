@@ -17586,7 +17586,7 @@ MonoBehaviour:
   - {fileID: 723828562}
   - {fileID: 438417886}
   - {fileID: 1284456945}
-  puzzleMoveLimits: 0b0000000c0000001b0000000f0000000c0000000c0000001e000000
+  puzzleMoveLimits: 0b00000014000000230000001e00000018000000180000001e000000
   player: {fileID: 536746569}
   currentPuzzleIndex: 1
   menuCanvas: {fileID: 278967176}
