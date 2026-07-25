@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3362329851348445106}
   - component: {fileID: 3482669245592936899}
   - component: {fileID: 5378714235941856368}
+  - component: {fileID: 2463191581901502295}
   m_Layer: 0
   m_Name: GhostPlayer
   m_TagString: Untagged
@@ -33,8 +34,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.1021, y: 0.569, z: 0}
-  m_LocalScale: {x: 0.7841719, y: 0.65932953, z: 0.7076}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.45, y: 0.45, z: 0.45}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -87,7 +88,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1460147541, guid: ed4edcc13cc60764181cc25a7679faf6, type: 3}
+  m_Sprite: {fileID: -1250442670604459380, guid: be879c8b64debcc42b9637ac19005617, type: 3}
   m_Color: {r: 0, g: 0.98099947, b: 1, a: 0.5254902}
   m_FlipX: 0
   m_FlipY: 0
@@ -161,17 +162,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.67}
+  m_Offset: {x: -0.017494142, y: 0.1817556}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1.3125, y: 1.5625}
+    oldSize: {x: 2.640625, y: 3.578125}
     newSize: {x: 1.3125, y: 1.5625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.13, y: 1.37}
+  m_Size: {x: 0.567008, y: 0.469849}
   m_EdgeRadius: 0
 --- !u!50 &3362329851348445106
 Rigidbody2D:
@@ -224,3 +225,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3d82805e400a14a9d9716cff5e9b61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridActor
+--- !u!95 &2463191581901502295
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 307770468726296706}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b0834275187d4104eb910d31e0aba949, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

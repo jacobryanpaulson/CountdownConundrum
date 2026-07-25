@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7650106816502564353}
   - component: {fileID: 3597381788190282370}
   - component: {fileID: 685657230853709985}
+  - component: {fileID: 8608518389902082125}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -32,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.1021, y: 0.569, z: 0}
-  m_LocalScale: {x: 0.7841719, y: 0.65932953, z: 0.7076}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -86,7 +87,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 6
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1460147541, guid: ed4edcc13cc60764181cc25a7679faf6, type: 3}
+  m_Sprite: {fileID: -439665989, guid: cd134d5817b33ce4bbef6bd1955e4812, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -110,7 +111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   groundTilemap: {fileID: 0}
   collisionTilemap: {fileID: 0}
-  maxMoves: 20
+  maxMoves: 12
   levelGoal: {fileID: 0}
   stepText: {fileID: 0}
 --- !u!114 &7689898681666175632
@@ -125,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a7134bb447250a4c9246a43d6922525, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTeleport
+  interactText: {fileID: 0}
   teleportCooldown: 0.5
 --- !u!61 &7650106816502564353
 BoxCollider2D:
@@ -164,7 +166,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1.3125, y: 1.5625}
+    oldSize: {x: 0.71428573, y: 0.9662338}
     newSize: {x: 1.17, y: 1.17}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -211,3 +213,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d1401b1efca82e409b9d14f0f8c36a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonActivator
+--- !u!114 &8608518389902082125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8236351360708524460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3d82805e400a14a9d9716cff5e9b61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridActor
