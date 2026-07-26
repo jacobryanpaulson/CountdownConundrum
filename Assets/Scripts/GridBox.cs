@@ -12,12 +12,14 @@ public class GridBox : MonoBehaviour
     [Header("Grid References")]
     [SerializeField] private Tilemap groundTilemap;
     [SerializeField] private Tilemap collisionTilemap;
+    
 
     private Vector3Int startingCell;
     private Rigidbody2D boxBody;
 
     private void Awake()
     {
+       
         boxBody = GetComponent<Rigidbody2D>();
 
         if (groundTilemap == null || collisionTilemap == null)
@@ -48,6 +50,7 @@ public class GridBox : MonoBehaviour
 
     public bool TryPush(Vector2 direction)
     {
+         BoxSound boxSound  = GetComponent<BoxSound>();
         Vector3 targetWorldPosition =
             transform.position + (Vector3)direction;
 
@@ -76,6 +79,7 @@ public class GridBox : MonoBehaviour
         {
             return false;
         }
+        boxSound.BoxPushSound();
 
         MoveToCell(targetCell);
         return true;
@@ -124,6 +128,7 @@ public class GridBox : MonoBehaviour
 
     private void MoveToCell(Vector3Int cell)
     {
+        
         Vector3 cellCenter =
             groundTilemap.GetCellCenterWorld(cell);
 
@@ -131,5 +136,6 @@ public class GridBox : MonoBehaviour
             cellCenter.x,
             cellCenter.y
         );
+        
     }
 }
