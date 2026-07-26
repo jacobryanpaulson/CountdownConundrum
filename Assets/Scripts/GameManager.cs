@@ -88,11 +88,15 @@ public class GameManager : MonoBehaviour
             return;
 
         }
-        ChangeState(GameState.MainMenu);
+       
         
     }
     private void Start()
     {
+        
+       CurrentState = GameState.MainMenu;
+       
+        HandleStateChange();
         
         ResetToFirstPuzzle();
 
@@ -175,6 +179,7 @@ public class GameManager : MonoBehaviour
     }
     public void ResetToFirstPuzzle()
 {
+   
    
     currentPuzzleIndex = 0;
 
