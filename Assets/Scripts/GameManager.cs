@@ -54,10 +54,9 @@ public class GameManager : MonoBehaviour
 
         if (tutorialUI == null)
         {
-            tutorialUI =
-                FindFirstObjectByType<LevelTutorialUI>(
-                    FindObjectsInactive.Include
-                );
+            tutorialUI = FindFirstObjectByType<LevelTutorialUI>(
+                FindObjectsInactive.Include
+            );
         }
 
         if (tutorialUI == null)
@@ -134,15 +133,11 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            StartCoroutine(
-                TransitionToState(newState)
-            );
+            StartCoroutine(TransitionToState(newState));
         }
     }
 
-    private IEnumerator TransitionToState(
-        GameState newState
-    )
+    private IEnumerator TransitionToState(GameState newState)
     {
         yield return new WaitForSecondsRealtime(0.5f);
 
@@ -174,9 +169,7 @@ public class GameManager : MonoBehaviour
 
                 if (tutorialUI != null)
                 {
-                    tutorialUI.ShowTutorialForLevel(
-                        currentPuzzleIndex
-                    );
+                    tutorialUI.ShowTutorialForLevel(currentPuzzleIndex);
                 }
 
                 break;
@@ -220,46 +213,39 @@ public class GameManager : MonoBehaviour
 
         if (
             player != null &&
-            player.TryGetComponent<PlayerController>(
-                out PlayerController playerController
-            )
+            spawnPoints != null &&
+            spawnPoints.Length > 0 &&
+            spawnPoints[0] != null
         )
         {
+            player.transform.position = spawnPoints[0].position;
+
+            if (LoopManager.Instance != null)
+            {
+                LoopManager.Instance.UpdateSpawnPoint(spawnPoints[0]);
+            }
+
             if (
-                spawnPoints != null &&
-                spawnPoints.Length > 0 &&
-                spawnPoints[0] != null
+                player.TryGetComponent<PlayerController>(
+                    out PlayerController playerController
+                )
             )
             {
-                player.transform.position =
-                    spawnPoints[0].position;
-
-                if (LoopManager.Instance != null)
+                if (
+                    levelGoals != null &&
+                    levelGoals.Length > 0
+                )
                 {
-                    LoopManager.Instance.UpdateSpawnPoint(
-                        spawnPoints[0]
-                    );
+                    playerController.UpdatePuzzleReferences(levelGoals[0]);
                 }
-            }
 
-            if (
-                levelGoals != null &&
-                levelGoals.Length > 0
-            )
-            {
-                playerController.UpdatePuzzleReferences(
-                    levelGoals[0]
-                );
-            }
-
-            if (
-                puzzleMoveLimits != null &&
-                puzzleMoveLimits.Length > 0
-            )
-            {
-                playerController.ResetMoves(
-                    puzzleMoveLimits[0]
-                );
+                if (
+                    puzzleMoveLimits != null &&
+                    puzzleMoveLimits.Length > 0
+                )
+                {
+                    playerController.ResetMoves(puzzleMoveLimits[0]);
+                }
             }
         }
 
@@ -272,9 +258,7 @@ public class GameManager : MonoBehaviour
         {
             if (puzzleCam[i] != null)
             {
-                puzzleCam[i].gameObject.SetActive(
-                    i == 0
-                );
+                puzzleCam[i].gameObject.SetActive(i == 0);
             }
         }
     }
@@ -286,9 +270,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(
-            AdvanceToNextPuzzle()
-        );
+        StartCoroutine(AdvanceToNextPuzzle());
     }
 
     private IEnumerator AdvanceToNextPuzzle()
@@ -296,25 +278,37 @@ public class GameManager : MonoBehaviour
         isChangingPuzzle = true;
 
         yield return new WaitForSeconds(0.5f);
-
         yield return FadeToBlack();
 
-        int nextIndex =
-            currentPuzzleIndex + 1;
+        if (puzzleCam == null || puzzleCam.Length == 0)
+        {
+            Debug.LogError(
+                "GameManager cannot advance because no puzzle cameras are assigned."
+            );
 
-        if (
-            puzzleCam == null ||
-            nextIndex >= puzzleCam.Length
-        )
+            yield return FadeFromBlack();
+            isChangingPuzzle = false;
+            yield break;
+        }
+
+        int nextIndex = currentPuzzleIndex + 1;
+
+        // The player has completed the final puzzle.
+        if (nextIndex >= puzzleCam.Length)
         {
             Debug.Log("All puzzles completed!");
+
+            // Preserves the sound behavior added by the other branch.
+            if (WinLoseLevelSFX.Instance != null)
+            {
+                WinLoseLevelSFX.Instance.LoseSound();
+            }
 
             ResetToFirstPuzzle();
 
             if (fadeImage != null)
             {
-                fadeImage.color =
-                    new Color(0f, 0f, 0f, 0f);
+                fadeImage.color = new Color(0f, 0f, 0f, 0f);
             }
 
             CurrentState = GameState.MainMenu;
@@ -334,6 +328,18 @@ public class GameManager : MonoBehaviour
                 $"Missing spawn point for puzzle index {nextIndex}."
             );
 
+            yield return FadeFromBlack();
+            isChangingPuzzle = false;
+            yield break;
+        }
+
+        if (puzzleCam[nextIndex] == null)
+        {
+            Debug.LogError(
+                $"Missing camera for puzzle index {nextIndex}."
+            );
+
+            yield return FadeFromBlack();
             isChangingPuzzle = false;
             yield break;
         }
@@ -347,26 +353,18 @@ public class GameManager : MonoBehaviour
             levelGoals[currentPuzzleIndex].ResetGoal();
         }
 
-        Camera currentCamera =
-            puzzleCam[currentPuzzleIndex];
-
-        Camera nextCamera =
-            puzzleCam[nextIndex];
-
-        Transform nextSpawn =
-            spawnPoints[nextIndex];
+        Camera currentCamera = puzzleCam[currentPuzzleIndex];
+        Camera nextCamera = puzzleCam[nextIndex];
+        Transform nextSpawn = spawnPoints[nextIndex];
 
         if (LoopManager.Instance != null)
         {
-            LoopManager.Instance.UpdateSpawnPoint(
-                nextSpawn
-            );
+            LoopManager.Instance.UpdateSpawnPoint(nextSpawn);
         }
 
         if (player != null)
         {
-            player.transform.position =
-                nextSpawn.position;
+            player.transform.position = nextSpawn.position;
 
             if (
                 player.TryGetComponent<PlayerController>(
@@ -396,32 +394,22 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (nextCamera != null)
-        {
-            nextCamera.gameObject.SetActive(true);
-        }
+        nextCamera.gameObject.SetActive(true);
 
         if (currentCamera != null)
         {
             currentCamera.gameObject.SetActive(false);
         }
 
-        currentPuzzleIndex =
-            nextIndex;
+        currentPuzzleIndex = nextIndex;
 
-        yield return new WaitForSeconds(
-            levelTransitionDelay
-        );
-
+        yield return new WaitForSeconds(levelTransitionDelay);
         yield return FadeFromBlack();
 
-        // This must happen after currentPuzzleIndex changes
-        // and after the new level has faded into view.
+        // Show the tutorial only after the new puzzle is active and visible.
         if (tutorialUI != null)
         {
-            tutorialUI.ShowTutorialForLevel(
-                currentPuzzleIndex
-            );
+            tutorialUI.ShowTutorialForLevel(currentPuzzleIndex);
         }
 
         isChangingPuzzle = false;
@@ -444,14 +432,12 @@ public class GameManager : MonoBehaviour
                 elapsedTime / fadeDuration
             );
 
-            fadeImage.color =
-                new Color(0f, 0f, 0f, alpha);
+            fadeImage.color = new Color(0f, 0f, 0f, alpha);
 
             yield return null;
         }
 
-        fadeImage.color =
-            new Color(0f, 0f, 0f, 1f);
+        fadeImage.color = new Color(0f, 0f, 0f, 1f);
     }
 
     private IEnumerator FadeFromBlack()
@@ -471,13 +457,11 @@ public class GameManager : MonoBehaviour
                 1f - elapsedTime / fadeDuration
             );
 
-            fadeImage.color =
-                new Color(0f, 0f, 0f, alpha);
+            fadeImage.color = new Color(0f, 0f, 0f, alpha);
 
             yield return null;
         }
 
-        fadeImage.color =
-            new Color(0f, 0f, 0f, 0f);
+        fadeImage.color = new Color(0f, 0f, 0f, 0f);
     }
 }

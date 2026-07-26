@@ -6713,7 +6713,7 @@ GameObject:
   m_Component:
   - component: {fileID: 496920230}
   m_Layer: 0
-  m_Name: Puzzle 1
+  m_Name: 'Puzzle 1Mikes '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
