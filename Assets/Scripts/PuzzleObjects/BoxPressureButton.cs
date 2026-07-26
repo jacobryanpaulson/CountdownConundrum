@@ -39,6 +39,12 @@ public class BoxPressureButton : MonoBehaviour
         }
 
         boxCollidersOnButton.Add(other);
+          
+          if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.ButtonSound();}
+
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.DoorSound();}
 
         UpdateButtonState();
     }
@@ -52,6 +58,11 @@ public class BoxPressureButton : MonoBehaviour
         {
             return;
         }
+          if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.ButtonSound();}
+
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.DoorSound();}
 
         UpdateButtonState();
     }

@@ -6,6 +6,7 @@ public class LevelGoal : MonoBehaviour
     [Header("Goal Setup")]
     [SerializeField] private Tilemap goalTilemap;
     [SerializeField] private GameObject levelCompleteMessage;
+   
     
 
     public bool IsCompleted { get; private set; }
@@ -20,8 +21,10 @@ public class LevelGoal : MonoBehaviour
 
     public bool CheckForCompletion(Vector3 playerPosition)
     {
+       
         if (IsCompleted)
         {
+       
             return false;
         }
 
@@ -43,8 +46,14 @@ public class LevelGoal : MonoBehaviour
         }
 
         IsCompleted = true;
+
           if (levelCompleteMessage != null)
         {
+                    if (WinLoseLevelSFX.Instance != null)
+        {
+            WinLoseLevelSFX.Instance.WinSound();
+        }
+
             levelCompleteMessage.SetActive(true);
         }
         Debug.Log("Level Complete!");

@@ -62,13 +62,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            
             ToggleCloneRecording();
         }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
+           if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.ResetSound();}
             Debug.Log("Manual Reset Triggered!");
 
             CancelCloneRecording();
@@ -197,10 +201,14 @@ public class PlayerController : MonoBehaviour
     {
         if (isRecordingClone)
         {
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.CloneSound();}
             FinishCloneRecording();
         }
         else
         {
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.RecordCloneSound();}
             BeginCloneRecording();
         }
     }
