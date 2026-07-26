@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+[RequireComponent(typeof(FootstepManager))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Grid References")]
@@ -52,6 +53,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        
         controls.Movement.Movement.performed +=
             context => Move(context.ReadValue<Vector2>());
 
@@ -80,6 +82,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move(Vector2 direction)
     {
+        FootstepManager footStepManager = GetComponent<FootstepManager>();
         if (!canMove || currentMovesRemaining <= 0)
         {
             return;
@@ -91,10 +94,12 @@ public class PlayerController : MonoBehaviour
         bool movementSucceeded =
             GridMovement.TryMoveActor(
                 transform,
-                direction,
+                direction, 
                 groundTilemap,
                 collisionTilemap
             );
+            footStepManager.PlayFootsteps();
+            animator.SetTrigger("IsWalking");
 
         if (!movementSucceeded)
         {
