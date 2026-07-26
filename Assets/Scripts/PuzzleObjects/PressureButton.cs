@@ -35,6 +35,11 @@ public class PressureButton : MonoBehaviour
         {
             return;
         }
+         if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.ButtonSound();}
+
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.DoorSound();}
 
         activatorsOnButton.Add(other);
         UpdateButtonVisual();
@@ -48,6 +53,11 @@ public class PressureButton : MonoBehaviour
         {
             return;
         }
+         if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.ButtonSound();}
+
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.DoorSound();}
 
         UpdateButtonVisual();
     }

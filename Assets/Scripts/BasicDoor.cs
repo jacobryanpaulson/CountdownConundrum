@@ -140,6 +140,7 @@ public class BasicDoor : MonoBehaviour
         );
 
         IsOpen = true;
+         
     }
 
     private void CloseDoorImmediately()
@@ -150,6 +151,8 @@ public class BasicDoor : MonoBehaviour
         );
 
         IsOpen = false;
+        
+       
     }
 
     private void OnDrawGizmosSelected()

@@ -236,6 +236,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator AdvanceToNextPuzzle()
     {
+        WinLoseLevelSFX levelSFX = GetComponent<WinLoseLevelSFX>();
         yield return new WaitForSeconds(.5f);
            if (fadeImage != null)
     {
@@ -258,6 +259,8 @@ public class GameManager : MonoBehaviour
         int nextIndex = currentPuzzleIndex + 1;
         if(nextIndex >= puzzleCam.Length)
         {
+            if(WinLoseLevelSFX.Instance != null){
+            WinLoseLevelSFX.Instance.LoseSound();}
             ChangeState(GameState.MainMenu);
             ResetToFirstPuzzle();
         }
