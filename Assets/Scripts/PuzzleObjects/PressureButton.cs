@@ -5,8 +5,8 @@ public class PressureButton : MonoBehaviour
 {
     [Header("Button Visuals")]
     [SerializeField] private SpriteRenderer buttonRenderer;
-    [SerializeField] private Color releasedColor = Color.red;
-    [SerializeField] private Color pressedColor = Color.green;
+    [SerializeField] private Sprite releasedSprite;
+    [SerializeField] private Sprite pressedSprite; 
 
     [Header("Controlled Object")]
     [SerializeField] private BasicDoor controlledDoor;
@@ -67,9 +67,9 @@ public class PressureButton : MonoBehaviour
     {
         if (buttonRenderer != null)
         {
-            buttonRenderer.color = IsPressed
-            ? pressedColor
-            : releasedColor;
+            buttonRenderer.sprite = IsPressed
+            ? pressedSprite
+            : releasedSprite;
         }
 
         if(controlledDoor != null)

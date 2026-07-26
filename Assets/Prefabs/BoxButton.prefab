@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 7756972835195459968, guid: 920e56fb2d011784daa8ac48295efbaa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -131,7 +131,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1.14, y: 1.14}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b19d9a20792a34847b5064e27a45e262, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoxPressureButton
-  buttonRenderer: {fileID: 0}
-  releasedColor: {r: 0, g: 0.24022293, b: 1, a: 1}
-  pressedColor: {r: 0, g: 1, b: 0, a: 1}
+  buttonRenderer: {fileID: 4271531911315244051}
+  releasedSprite: {fileID: 7756972835195459968, guid: 920e56fb2d011784daa8ac48295efbaa, type: 3}
+  pressedSprite: {fileID: -7465006597928660982, guid: 9edf0d1fd6286e648b947bfb5f7124f9, type: 3}
   controlledDoor: {fileID: 0}

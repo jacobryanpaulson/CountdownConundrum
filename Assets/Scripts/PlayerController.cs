@@ -304,18 +304,18 @@ public class PlayerController : MonoBehaviour
 
         string recordingMessage =
             isRecordingClone
-                ? "\nRECORDING CLONE"
-                : "\nPress Q to Record";
+                ? "\nrecording clone" 
+                : "\npress q to record";
 
         if (!canMove && currentMovesRemaining <= 0)
         {
             recordingMessage =
-                "\nOut of Steps - Press R";
+                "\nout of steps - press r";
         }
 
         stepText.text =
-            "Steps Remaining: " +
-            currentMovesRemaining +
+            "steps remaining: " + 
+            currentMovesRemaining + 
             recordingMessage;
     }
 
